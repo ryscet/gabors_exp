@@ -61,9 +61,11 @@ class trial_controller(object):
     cue_triangle = visual.Polygon(win=win, edges = 3, units='norm', size=(0.4, 0.2), fillColor = 'black', lineColor = 'black', ori = 90)
 
     # Gabor which judged to be vertical or not
-    probe_gabor = visual.GratingStim(win=win, mask='gauss', units = 'deg', size = (gabor_size, gabor_size), tex = 'sin', sf = 1, interpolate = True)
+    probe_gabor = visual.GratingStim(win=win, mask='gauss', texRes = 2**9, units = 'deg', size = (gabor_size, gabor_size), tex = 'tri', sf = 1, interpolate = True)
 
     probe_orientations = np.array([])
+
+    last_two_responses = []
 
     diff_index = 0
     def __init__(self, num_trials):
@@ -84,10 +86,13 @@ class trial_controller(object):
 
     def adjust_diff(self,response_history):
         response_dict = {'correct': 1, 'wrong' : 0}
+        
+        
+        response_history = [response_dict[response] for response in response_history]
 
         if(len(response_history) >=2): # only apply the staircase after the first two trials
-            #MAKE SURE IT DOES NOT MODIFY THE ORIGINAL LIST
-            response_history = [response_dict[response] for response in response_history]
+        
+            self.last_two_responses.append(response_history[-1])
 
             # decrement difficulty if there was an error. 
             if response_history[-1] == 0:
@@ -100,7 +105,8 @@ class trial_controller(object):
                     print('already minimum difficulty')
             
             # increment difficulty after tow consecutve successess
-            elif np.array(response_history[-2:]).sum() == 2:
+            elif np.array(response_history[-2:]).sum() == 2 and len(self.last_two_responses) >=2:
+                self.last_two_responses = []
                 # Try to increment it otherwise keep at maximum
                 if(self.diff_index < len(self.probe_orientations) - 1):
                     self.diff_index = self.diff_index +1
@@ -129,6 +135,7 @@ class trial_controller(object):
         steps = np.arange(0, 25, 1)
 
         angle_list = np.array([self.exponential_function(x) for x in steps])
+        #angle_list = np.array([0 for x in steps])
 
         return angle_list
 

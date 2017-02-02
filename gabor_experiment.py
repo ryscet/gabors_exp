@@ -153,8 +153,8 @@ def main():
 def OnQuit(dir_path, pd_log, saved_db):
     """Called at the end of script and saves logs to disk"""    
     
-    pd_log.to_csv(dir_path +'/exp_logs/'+ params.expInfo['participant'] + '.csv', index_label = 'index_copy')
-    with open(dir_path + '/exp_logs/' + params.expInfo['participant'] + datetime.now().strftime('_%Y_%m_%d_') + 'log.pickle', 'wb') as handle:
+    pd_log.to_csv(dir_path +'/stair_logs/'+ params.expInfo['participant'] + '.csv', index_label = 'index_copy')
+    with open(dir_path + '/stair_logs/' + params.expInfo['participant'] + datetime.now().strftime('_%Y_%m_%d_') + 'log.pickle', 'wb') as handle:
         pickle.dump(saved_db, handle)
     
         
