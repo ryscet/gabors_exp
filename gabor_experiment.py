@@ -34,7 +34,7 @@ def main():
     pd_log = pd.DataFrame() # pandas log for online analysis
 
     ### SETUP PARAMETERS ###
-    num_trials = 40 # First draft of staircase length, use fixed num of trials
+    num_trials = 50 # First draft of staircase length, use fixed num of trials
     target_presentation_time = 2.0 # onscreen target
     ISI = 2.0 # empty screen between target and probe
     probe_time = 0.2 # probe onscreen time
@@ -72,13 +72,15 @@ def main():
         probe.draw() # Second gabor
         
         params.win.flip()
+
+        params.win.getMovieFrame() # save screen during probe to buffer 
+
         probe_appeared = pd.to_datetime(datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))
         core.wait(probe_time)
 
-
         ### EMPTY ###
         params.win.flip()
-        core.wait(0.5)
+        core.wait(0.2)
 
 
         ### RESPONSE ###
@@ -132,12 +134,12 @@ def main():
     
                             
         pd_log = pd_log.append(pd.DataFrame(saved_db[trial], [trial]))
-        
-
-
     
         #### ITI ####
         params.win.flip() # Clear the screen after the trial
+        params.win.saveMovieFrames('%s\\movie_frames\\%s_angle_%i_frame_%i.tif'%(dir_path, params.expInfo['participant'], stair_angle, trial))
+
+        #win.params.saveMovieFrames('frame.tif')
         core.wait(ITI)
     
     

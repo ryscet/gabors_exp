@@ -12,13 +12,49 @@ import matplotlib as mpl
 import pandas as pd
 import os
 import glob
+from scipy import misc
+import itertools
+list(itertools.combinations(range(6), 2))
 
+
+plt.style.use('ggplot')
 plt.close('all')
-acc_cmap, norm = mpl.colors.from_levels_and_colors([0,1,2], ['red', 'blue']) 
-
-#and then ax.scatter(x, y, c=z, cmap=cmap, norm=norm)
+acc_cmap, norm = mpl.colors.from_levels_and_colors([0,1,2], ['red', 'blue'])
 
 
+def inspect_images():
+    
+    path = 'C:/Users/Ryszard/Desktop/gabors_exp/movie_frames/'
+    all_angles = glob.glob(path + '*')
+    o_angles = [misc.imread(fname).astype(float)[:, :, 0] for fname in all_angles if 'angle_0' in fname]
+    i_angles = [misc.imread(fname).astype(float)[:, :, 0] for fname in all_angles if 'angle_1' in fname]
+    
+    #test_same_angle(o_angles)
+    #test_same_angle(i_angles)
+    
+    test_different_angles(o_angles, i_angles)
+    
+
+def test_same_angle(frames):
+    combinations = list(itertools.combinations(range(len(frames)), 2))
+    
+    for comb in combinations:
+        diff = frames[comb[0]] - frames[comb[1]]
+        if(diff.max() != 0):
+            print('HOUSTON WE HAVE A PROBLEM')
+        
+def test_different_angles(a, b):
+    combinations = list(itertools.product(a, b))
+    
+
+    for c in combinations:
+        diff = c[0] - c[1]
+        if(diff.max() == 0):
+            print('HOUSTON WE HAVE A PROBLEM')
+
+        
+        
+        
 def plot_staircase():
     results = pd.read_csv('C:\\Users\\Ryszard\\Desktop\\gabors_exp\\stair_logs\\6.csv')
     results.replace({'accuracy': {'correct' :1, 'wrong' : 0}}, inplace = True)
@@ -39,19 +75,26 @@ def plot_staircase():
         else:
             reversals.append(non_zero_indexes[crossing])
 
+    reversal_levels = results['diff_index'].iloc[reversals]
 
+    threshold_angle = results['precise_angle'].iloc[reversals].mean()
     
     fig, axes = plt.subplots()
-    axes.plot(results['trial'], results['diff_index'], c = 'black', alpha = 0.75, linewidth = 0.5)
+    
+    fig.suptitle('Staircase results: %.4f'%threshold_angle, fontweight = 'bold' )
+    
+    axes.plot(results['trial'], results['diff_index'], c = 'black', alpha = 0.75, linewidth = 0.5, label = '')
     #axes.plot(results['trial'], results['used_angle'], c = 'g', linestyle = '--', alpha = 0.75, linewidth = 0.5)
     
-    axes.scatter(results['trial'], results['diff_index'], c= results['accuracy'], cmap=acc_cmap, norm=norm, s = 50)
+    axes.scatter(results['trial'], results['diff_index'], c= results['accuracy'], cmap=acc_cmap, norm=norm, s = 50, label = 'accuracy')
     
-    axes.vlines(reversals, 0,15, 'r', '--')
+    axes.scatter(reversals,results['diff_index'].iloc[reversals],  s=100, facecolors='none', edgecolors='r', label = 'reversals')
     #axes.plot(results['trial'], results['reversals'])
-    
-    axes.set_ylabel('angle magnitude in degrees')
+    axes.axhline(reversal_levels.mean(), label = 'average reversals')
+    axes.set_ylabel('difficulty level')
     axes.set_xlabel('trial number')
+    
+    plt.legend(loc = 'best')
     
     raise_window()
     
@@ -81,4 +124,4 @@ def raise_window(figname=None):
     cfm.window.raise_()
 
 #path = find_latest_log()
-results_ = plot_staircase()
+#results_ = plot_staircase()

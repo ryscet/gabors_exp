@@ -10,6 +10,7 @@ import random
 import os 
 import glob
 
+
 # Initial window prompting for subject name
 expName = u'Exp start'  # from the Builder filename that created this script
 expInfo = {u'participant': u''}
@@ -20,14 +21,14 @@ expInfo['expName'] = expName
 
 #Define the main application window
 mon = monitors.Monitor('dell', width= 54.61, distance=57)
-mon.setSizePix([1920, 1080])
+mon.setSizePix((1920, 1080))
 win = visual.Window( fullscr = True, winType  ='pyglet', screen =0, waitBlanking = True, checkTiming = True, monitor = mon)
 win.mouseVisible = False
 
 gabor_size = 10
 fixation_cross_size = 0.02
 
-
+win.size = (1920, 1080)
 
 # Define the target to be detected
 class instructions_params(object):
@@ -39,8 +40,7 @@ class instructions_params(object):
         self.top_response = visual.TextStim(win, 'vertical', color='blue', pos = (0.0, 0.25))
         
         self.bottom_response = visual.TextStim(win,'not vertical', color='red', pos = (0.0, - 0.25))
-     
-        
+             
         # multiply by height to width ratio to get perfect square - 1080/1920
         self.fixation_1 = visual.Line(win=win, start=(-fixation_cross_size * 0.56, 0.0), end=(fixation_cross_size * 0.56, 0.0), **{'lineColor':'white', 'lineWidth' :5.0})
         self.fixation_2 = visual.Line(win=win, start=(0.0, -fixation_cross_size), end=(0.0,fixation_cross_size), **{'lineColor':'white', 'lineWidth' :5.0})
@@ -57,6 +57,7 @@ class instructions_params(object):
 
 class trial_controller(object):
     
+    print(win.size)
     # The cue which appears first
     cue_triangle = visual.Polygon(win=win, edges = 3, units='norm', size=(0.4, 0.2), fillColor = 'black', lineColor = 'black', ori = 90)
 
@@ -119,9 +120,6 @@ class trial_controller(object):
     def add_noise_to_angle(self,angle):
         """ Pseudo-random shuffle from a collection of angles defined by staircase, relatively big differences and zero differences
         """
-
-        # Add small gaussian noise
-        #angle = np.random.normal(angle, scale = 0.01)
         
         # Toss a coin to choose the angle either in clockwise or counterclockwise direction
         if(np.random.choice([True, False])):
@@ -135,7 +133,6 @@ class trial_controller(object):
         steps = np.arange(0, 25, 1)
 
         angle_list = np.array([self.exponential_function(x) for x in steps])
-        #angle_list = np.array([0 for x in steps])
 
         return angle_list
 
