@@ -13,7 +13,7 @@ import random
 import os 
 import glob
 
-import explore_results as explore
+#import explore_results as explore
 
 # Initial window prompting for subject name
 expName = u'Exp start'  # from the Builder filename that created this script
@@ -32,15 +32,13 @@ gabor_size = 10
 fixation_cross_size = 0.02
 
 
-print sound.Sound
-
 # Define the target to be detected
 class instructions_params(object):
 
     dir_path = os.path.dirname(os.path.realpath(__file__))
 
-    correct_sound = sound.Sound(dir_path + '\\resources\\correct.ogg')
-    incorrect_sound = sound.Sound(dir_path + '\\resources\\incorrect.ogg')
+    correct_sound = sound.Sound(dir_path + '/resources/correct.ogg')
+    incorrect_sound = sound.Sound(dir_path + '/resources/incorrect.ogg')
     print(dir_path)
 
     def __init__(self):
@@ -73,31 +71,31 @@ class instructions_params(object):
 
         return order
 
-    def color_feedback(self, response):
+#    def color_feedback(self, response):
+#
+#        #self.toggle_fixation()
+#
+#
+#        if(response == 'correct'):
+#            self.correct_sound.play()
+#
+#            self.fixation_1.lineColor = 'green'
+#            self.fixation_2.lineColor = 'green'
+#        if(response == 'wrong'):
+#            self.incorrect_sound.play()
+#
+#            self.fixation_1.lineColor = 'red'
+#            self.fixation_2.lineColor = 'red'
+#        
+#        self.toggle_fixation()
 
-        #self.toggle_fixation()
 
-
-        if(response == 'correct'):
-            self.correct_sound.play()
-
-            self.fixation_1.lineColor = 'green'
-            self.fixation_2.lineColor = 'green'
-        if(response == 'wrong'):
-            self.incorrect_sound.play()
-
-            self.fixation_1.lineColor = 'red'
-            self.fixation_2.lineColor = 'red'
-        
-        self.fixation_1.draw()
-        self.fixation_2.draw()
-
-    def reset_feedback(self):
-
-        self.toggle_fixation()
-
-        self.fixation_1.lineColor = 'white'
-        self.fixation_2.lineColor = 'white'
+#    def reset_feedback(self):
+#
+#        self.toggle_fixation()
+#
+#        self.fixation_1.lineColor = 'white'
+#        self.fixation_2.lineColor = 'white'
 
 
     def toggle_fixation(self):
@@ -108,31 +106,31 @@ class instructions_params(object):
 
 class trial_controller(object):
     # The gabor which appears first
-    cue_triangle = visual.Polygon(win=win, edges = 3, units='norm', size=(0.4, 0.2), fillColor = 'black', lineColor = 'black', ori = 90)
+    #cue_triangle = visual.Polygon(win=win, edges = 3, units='norm', size=(0.4, 0.2), fillColor = 'black', lineColor = 'black', ori = 90)
 
     # Second gabor which is compared to the target and answered if it is the same
-    probe_gabor = visual.GratingStim(win=win, mask='gauss', texRes = 2**9, units = 'deg', size = (gabor_size, gabor_size), tex = 'tri', sf = 1, interpolate = True)
+    sample_gabor = visual.GratingStim(win=win, mask='gauss', texRes = 2**9, units = 'deg', size = (gabor_size, gabor_size), tex = 'tri', sf = 1, interpolate = True)
 
-    probe_orientations = []
+    match_angles = []
 
     def __init__(self, num_trials):
 
          # Pseudo random shuffled list of probe angles
-        self.probe_orientations = self.create_probe_angles(num_trials)
+        self.match_angles = self.create_sample_angles(num_trials)
 
 
 
     def prepare_trial(self):
        
         # Change probe orientation by adding a value from the probe_orientations list
-        t_type, angle = self.probe_orientations.pop()
+        t_type, angle = self.match_angles.pop()
 
-        self.probe_gabor.setOri(0 + self.select_probe_angle(angle))
+        self.sample_gabor.setOri(np.random.normal(0, 360))
 
         return t_type, angle
 
  
-    def select_probe_angle(self,angle):
+    def select_sample_angle(self,angle):
         """ Pseudo-random shuffle from a collection of angles defined by staircase, relatively big differences and zero differences
         """
         
@@ -143,28 +141,24 @@ class trial_controller(object):
         return angle
 
 
-    def create_probe_angles(self, num_trials):
+    def create_sample_angles(self, num_trials):
         
         # Define proportion of trials for each angle value
-        num_stair = int(num_trials * 0.5)
-        num_big = int(num_trials * 0.05)
-        num_zero = int(num_trials * 0.45)
+        num_diff= int(num_trials * 0.5)
+        #num_big = int(num_trials * 0.05)
+        num_same = int(num_trials * 0.5)
         
-        # int always rounds down, so there will usually be some trials unnasignedd. Add them to stair trials
-        num_stair = num_stair + (num_trials - num_big - num_zero - num_stair )
         
         #load the staircase results
         # calculate the average of the last two levels used, this will either be the last stable success (upper bound) or include the error, i.e. lower bound
         #threshold = explore.describe_staircase(expInfo['participant']) if explore.describe_staircase(expInfo['participant']) >= 0.5 else 0.5
-        threshold = 0.5
+        threshold = 5.0
         print('threshold %.4f'%threshold)
         # Value used for the type of trials where the difference should be clearly visible
-        big_angle = 45
 
         # Add the angle values in the amounts specified bu num trials proportions
-        angle_list = [('identical', 0) for z in range(num_zero)]
-        angle_list.extend([('big', np.random.normal(big_angle , scale = 2)) for b in range(num_big)])
-        angle_list.extend([('threshold' , threshold) for s in range(num_stair)])
+        angle_list = [('identical', 0) for s in range(num_same)]
+        angle_list.extend([('threshold' , threshold) for d in range(num_same)])
 
         # put the list in random order the list
         random.shuffle(angle_list)

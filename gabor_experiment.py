@@ -21,8 +21,10 @@ import os
 from psychopy import event, core
 
 import gabor_params as params #My own helper class
+import time 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
+
 
 
 ### LOG VARIABLES ###
@@ -33,9 +35,10 @@ saved_db = OrderedDict() # Log is a dictionary, key is trial number, value is a 
 pd_log = pd.DataFrame() # pandas log for online analysis
 
 ### SETUP PARAMETERS ###
+refresh_rate = 60 # screen refresh rate in Hz. Compare it against check results returned by check.py
 
 num_trials = 100 # First draft of staircase length, use fixed num of trials
-target_presentation_time = 2.0 # onscreen target
+sample_presentation_time = 1.0 # onscreen target
 ISI = 5.0 # empty screen between target and probe
 probe_time = 0.2 # probe onscreen time
 ITI = 3.0 # between trial (from response untill new target)
@@ -59,66 +62,62 @@ def main(t_control):
     global responses
     global pd_log
 
-    target = t_control.cue_triangle
-    probe = t_control.probe_gabor
+    sample = t_control.sample_gabor
 
 # TODO use psychopy logger
     for trial in range(num_trials):    
         t_type, angle =  t_control.prepare_trial() # Generates angles from shuffled list
+        
         #### TARGET ####
         gui.toggle_fixation() # Turn fix off
-        target.draw() # First cue
-
+        
         target_appeared = pd.to_datetime(datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))
-        params.win.flip()
-        core.wait(target_presentation_time)
+        
+        for frame in range(int(sample_presentation_time * refresh_rate)):
+            sample.draw() # First cue
+            params.win.flip()
     
         ### ISI ###
         gui.toggle_fixation() # Turn fix on
-        params.win.flip() #Empty screen, only fixation cross
-        core.wait(ISI)
+        for frame in range(int(ISI * refresh_rate)):
+            params.win.flip() #Empty screen, only fixation cross
         
         #### PROBE ####
         gui.toggle_fixation() # Turn fix off
-        probe.draw() # Second gabor
+        sample.setOri(sample.ori + angle)
         
-        params.win.flip()
-
-        # Consider saving this frame to jpeg like in staircase
-        # params.win.getMovieFrame() # save screen during probe to buffer 
-
         probe_appeared = pd.to_datetime(datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))
-        core.wait(probe_time)
+
+        for frame in range(int(probe_time * refresh_rate)):
+            sample.draw() # Second gabor
+            params.win.flip()
+
 
         ### EMPTY ###
-        params.win.flip() # small interval after probe dissapeared
-        core.wait(0.2)
+        for frame in range(12):
+            params.win.flip() # small interval after probe dissapeared
 
         gui.toggle_fixation() # Turn fix on
-        params.win.flip()
+        
+        for frame in range(int(response_wait * refresh_rate)):
+            params.win.flip() # Draw an empty screen for short period after probe and then show the answer instructions
 
-        core.wait(response_wait) # Draw an empty screen for short period after probe and then show the answer instructions
 
         ### RESPONSE ###
 
-
         order = gui.randomize_response_instruction()
-
 
         instruction_appeared_time = pd.to_datetime(datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))
         
-
         gui.toggle_fixation() # Turn fix off
-
-        gui.top_response.draw()
-        gui.bottom_response.draw()
-        gui.middle_response.draw()
         
-        params.win.flip() # appear instruction
-
         thisResp = None
         while thisResp==None:
-            
+            gui.top_response.draw()
+            gui.bottom_response.draw()
+            gui.middle_response.draw()
+            params.win.flip() # appear instruction
+
             allKeys=event.waitKeys()
             for thisKey in allKeys:
                     
@@ -140,9 +139,7 @@ def main(t_control):
                     OnQuit()
                     event.clearEvents() #must clear other (eg mouse) events - they clog the buffer
                     params.win.close()
-                    core.quit() #abort experiment
-
-        
+                    core.quit() #abort experiment        
 
         # Time of keypress
         key_time = pd.to_datetime(datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))
@@ -173,20 +170,11 @@ def main(t_control):
         pd_log = pd_log.append(pd.DataFrame(saved_db[trial], [trial]))
         
 
-
-        gui.color_feedback(correct)
-        params.win.flip() # show color feedback, dissapear instruction
-
-        core.wait(0.5)
-
-        gui.reset_feedback()
+        gui.toggle_fixation() # Turn fix off
 
         #### ITI ####
-        params.win.flip() # dissapear feedback
-        #params.win.saveMovieFrames('%s\\movie_frames\\%s_angle_%i_frame_%i.tif'%(dir_path, params.expInfo['participant'], stair_angle, trial))
-
-        core.wait(ITI)
-    
+        for frame in range(int(ITI * refresh_rate)):
+            params.win.flip()
     
     params.win.close()
     
@@ -223,8 +211,6 @@ def OnQuit():
     pd_log.to_csv(dir_path +'/exp_logs/'+ params.expInfo['participant'] + '.csv', index_label = 'index_copy')
     with open(dir_path + '/exp_logs/' + params.expInfo['participant'] + datetime.now().strftime('_%Y_%m_%d_') + 'log.pickle', 'wb') as handle:
         pickle.dump(saved_db, handle)
-    
-        
     
     
 if __name__ == '__main__':

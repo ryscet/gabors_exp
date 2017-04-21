@@ -4,6 +4,21 @@ Investigate whether eeg activity determines probabillity of stimulus detection
 * Find the 77% accuracy threshold using a staircase procedure
 * Present threshold, identical and easily detectable stimuli while recording eeg
 
+
+
+#TO PREPARE THE ENVIRONMENT (tested on mac)
+--> Install conda and make a virtual environment with python 2.7 >> conda create -n <name_of_virtual_env> python=2.7
+--> Install dependencies (with conda install) (matplotlib, scipy, numpy, pandas)
+--> install psychopy from conda cloud >> conda install -n <name_of_virtual_env> -c cogsci psychopy=1.82.01
+(withoout virtual env >> conda install -c cogsci psychopy=1.82.01)
+--> activate the virtual env and when inside, install pygame >> pip install pygame
+DONE
+
+
+
+
+
+
 TO RUN:
 >> python2 gabors_exp.py
 
