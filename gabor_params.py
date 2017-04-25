@@ -32,6 +32,8 @@ gabor_size = 10
 fixation_cross_size = 0.02
 
 
+NUM_CONTROL = 30  # Number of control, or 'drop trials'
+
 # Define the target to be detected
 class instructions_params(object):
 
@@ -58,7 +60,7 @@ class instructions_params(object):
         
     def randomize_response_instruction(self):
 
-        instructions = ['not vertical', 'vertical']
+        instructions = ['non-match', 'match']
         order = 'diff-same'
         #coin toss
         if(np.random.choice([True, False])):
@@ -111,6 +113,14 @@ class trial_controller(object):
     # Second gabor which is compared to the target and answered if it is the same
     sample_gabor = visual.GratingStim(win=win, mask='gauss', texRes = 2**9, units = 'deg', size = (gabor_size, gabor_size), tex = 'tri', sf = 1, interpolate = True)
 
+    frame = visual.ShapeStim(win = win, units='norm', lineWidth=50, lineColor='green', lineColorSpace='rgb', fillColor=None, fillColorSpace='rgb', 
+                             vertices=[ [-1.0, -1.0] , [-1.0, 1.0] , [1.0,1.0] , [1.0,-1.0] ], closeShape=True,
+                             pos=(0, 0), size=1, ori=0.0, opacity=1.0, contrast=1.0, depth=0, interpolate=True, 
+                             name=None, autoLog=None, autoDraw=True)
+    
+    sensor_square = visual.Rect(win = win, width=0.4, height=0.4, **{'pos' : (1,-1), 'fillColor': 'white'})
+
+
     match_angles = []
 
     def __init__(self, num_trials):
@@ -142,12 +152,13 @@ class trial_controller(object):
 
 
     def create_sample_angles(self, num_trials):
-        
+        global NUM_CONTROL
         # Define proportion of trials for each angle value
         num_diff= int(num_trials * 0.5)
         #num_big = int(num_trials * 0.05)
         num_same = int(num_trials * 0.5)
         
+        num_control = NUM_CONTROL
         
         #load the staircase results
         # calculate the average of the last two levels used, this will either be the last stable success (upper bound) or include the error, i.e. lower bound
@@ -157,9 +168,9 @@ class trial_controller(object):
         # Value used for the type of trials where the difference should be clearly visible
 
         # Add the angle values in the amounts specified bu num trials proportions
-        angle_list = [('identical', 0) for s in range(num_same)]
-        angle_list.extend([('threshold' , threshold) for d in range(num_same)])
-
+        angle_list = [('match', 0) for s in range(num_same)]
+        angle_list.extend([('non-match' , threshold) for d in range(num_diff)])
+        angle_list.extend([('control' , None) for c in range(num_control)])
         # put the list in random order the list
         random.shuffle(angle_list)
 
