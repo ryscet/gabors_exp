@@ -5,9 +5,7 @@ Experiment:
     Show a series of gabor patches pairs. First gabor is the target, sceond is the probe. Subjects reply whether the probe is identical to the target. 
     
 """
-import pygame 
 from psychopy import prefs
-prefs.general['audioLib'] = ['pygame']
 
 from psychopy import sound 
 
@@ -22,24 +20,34 @@ from psychopy import event, core
 
 import staircase_params as params #My own helper class
 
+refresh_rate = 60 # screen refresh rate in Hz. Compare it against check results returned by check.py
 
+# TIMINGS
+# Stimulus timings from Serences 2009
+sample_presentation_time = 1.0 # onscreen target 
+ISI = 5.0 # empty screen between target and probe
+probe_time = 1.0 # probe onscreen time
+ITI = 3.0 # between trial (from response untill new target)
+response_wait = 2.0
+### SETUP PARAMETERS ###
+num_trials = 15 # First draft of staircase length, use fixed num of trials
 
 def main():
+    
+    # Initialize timestamps
+    START_TIME = pd.to_datetime(datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))
+    clock = core.MonotonicClock()
+    
+    ### STAIRCASE ###
+    accuracy = [] # List of strings: 'correct' or 'wrong'
+
 
     ### LOG VARIABLES ###
-    accuracy = [] # List of strings: 'correct' or 'wrong'
-    responses = np.zeros(1) # Array (will get extended) keeping track of all responses.
-    saved_response_times = [] # used to store rt's
     saved_db = OrderedDict() # Log is a dictionary, key is trial number, value is a tuple with all parameters: (thisResp, response_time, diff_index, step_list[diff_index], angle, orientation)
     pd_log = pd.DataFrame() # pandas log for online analysis
 
-    ### SETUP PARAMETERS ###
-    num_trials = 50 # First draft of staircase length, use fixed num of trials
-    target_presentation_time = 2.0 # onscreen target
-    ISI = 5.0 # empty screen between target and probe
-    probe_time = 0.2 # probe onscreen time
-    ITI = 3.0 # between trial (from response untill new target)
-    response_wait = 0.5
+
+
 
     ### CONTROLLER OBJECT ###
     t_control = params.trial_controller(num_trials) # Main helper object responsible for trial sequencing, selecting angles mainly
@@ -47,52 +55,68 @@ def main():
 
     dir_path = os.path.dirname(os.path.realpath(__file__))
 
-    target = t_control.cue_triangle
-    probe = t_control.probe_gabor
+    sample_gabor = t_control.sample_gabor
 
-# TODO use psychopy logger
     for trial in range(num_trials):
-        stair_angle, diff_index = t_control.decide_stair(accuracy) # Generates angles from shuffled list
-        print('angle: %.4f diff index: %i'%(stair_angle, diff_index))        
-        #### TARGET ####
-        gui.toggle_fixation() # Turn fix off
-        target.draw() # First cue
+        
+        trial_angles = t_control.decide_stair(accuracy)
 
-        target_appeared = pd.to_datetime(datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')) # save target time
-        params.win.flip()
-        core.wait(target_presentation_time)
+        diff_index, probe_angle, angle_bin, first_angle = trial_angles['diff_index'], trial_angles['probe_angle'], trial_angles['angle_bin'], trial_angles['first_angle']
+        
+        print('angle: %.4f diff index: %i'%(probe_angle, diff_index))        
+        
+        
+        #### ITI ####
+        ITI_time = pd.to_datetime(datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))
+        ITI_time_psychopy = clock.getTime()
+
+        for frame in range(int(ITI * refresh_rate)):
+            params.win.flip()
+        
+        #### TARGET ####
+        target_appeared = pd.to_datetime(datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))
+        target_appeared_psychopy = clock.getTime()
+        
+        # WE SET SAMPLE OREINATATION HERE
+        
+        for frame in range(int(sample_presentation_time * refresh_rate)):
+            sample_gabor.draw() # First cue # First cue, OREINTAION SET IN gabor_params in prepare_trial()
+            params.win.flip()
     
         ### ISI ###
-        gui.toggle_fixation() # Turn fix on
-        params.win.flip() #Empty screen, only fixation cross
-        core.wait(ISI)
+        ISI_time = pd.to_datetime(datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))
+        ISI_time_psychopy = clock.getTime()
+        
+        for frame in range(int(ISI * refresh_rate)):
+            params.win.flip() #Empty screen, only fixation cross
+        
         
         #### PROBE ####
-        gui.toggle_fixation() # Turn fix off
-        probe.draw() # Second gabor
+        sample_gabor.setOri(sample_gabor.ori + probe_angle) # Change the orientation according to staircase
         
-        params.win.flip()
-
-  #      params.win.getMovieFrame() # save screen during probe to buffer 
-
         probe_appeared = pd.to_datetime(datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))
-        core.wait(probe_time)
+        probe_appeared_psychopy = clock.getTime()
+        
+        for frame in range(int(probe_time * refresh_rate)):
+            sample_gabor.draw() # Second gabor
+            params.win.flip()
+
 
         ### EMPTY ###
-        params.win.flip()
-        core.wait(0.2)
-
-
-        ### RESPONSE ###
-        gui.toggle_fixation() # Turn fix on
-
-        gui.top_response.draw()
-        gui.bottom_response.draw()
         
-        params.win.flip()
+        for frame in range(int(response_wait * refresh_rate)):
+            params.win.flip() # Draw an empty screen for short period after probe and then show the anwsers's instructions
+
+
+        instruction_appeared_time = pd.to_datetime(datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))
+        instruction_appeared_time_psychopy = clock.getTime()
     
         thisResp = None
         while thisResp==None:
+       
+            gui.top_response.draw()
+            gui.bottom_response.draw() 
+            params.win.flip()
             
             allKeys=event.waitKeys()
             for thisKey in allKeys:
@@ -113,33 +137,35 @@ def main():
         # Time of keypress
         key_time = pd.to_datetime(datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))
         
-        # Calc response time
-        response_time = (key_time - probe_appeared).total_seconds()
             
-        saved_response_times.append(response_time)
         
-        raw_responses = np.append(responses, thisKey)
         accuracy.append(thisResp)
         
+
         saved_db[trial] = { 'trial' : trial,
+                            'angle_bin' : angle_bin,
+                            'first_angle' : first_angle,
                             'response' : thisKey,
                             'accuracy' : thisResp,
-                            'response_time' : response_time, 
                             'diff_index' : diff_index,
-                            'precise_angle' : stair_angle, 
+                            'precise_angle' : probe_angle, 
                             'target_time' : target_appeared,
-                            'probe_time' : probe_appeared,
+                            'target_time_psychopy' : target_appeared_psychopy,
                             'key_time' : key_time,
-                            'participant' : params.expInfo['participant']}
+                            'instruction_appeared_time' : instruction_appeared_time,
+                            'instruction_appeared_time_psychopy' : instruction_appeared_time_psychopy,
+                            'probe_appeared' : probe_appeared,
+                            'probe_appeared_psychopy' : probe_appeared_psychopy,
+                            'ISI_time' : ISI_time,
+                            'ISI_time_psychopy' : ISI_time_psychopy,
+                            'ITI_time' : ITI_time,
+                            'ITI_time_psychopy' : ITI_time_psychopy,
+                            'participant' : params.expInfo['participant'],
+                            'START_TIME' : START_TIME}
     
                             
         pd_log = pd_log.append(pd.DataFrame(saved_db[trial], [trial]))
     
-        #### ITI ####
-        params.win.flip() # Clear the screen after the trial
-       # params.win.saveMovieFrames('%s\\movie_frames\\%s_angle_%i_frame_%i.tif'%(dir_path, params.expInfo['participant'], 5, trial))
-
-        core.wait(ITI)
     
     
     params.win.close()

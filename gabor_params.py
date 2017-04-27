@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 import random 
 import os 
-import glob
+import math
 
 #import explore_results as explore
 
@@ -52,12 +52,17 @@ class instructions_params(object):
      
         
 # multiply by height to width ratio to get perfect square - 1080/1920
-        self.fixation_1 = visual.Line(win=win, start=(-fixation_cross_size * 0.56, 0.0), end=(fixation_cross_size * 0.56, 0.0), **{'lineColor':'white', 'lineWidth' :5.0})
-        self.fixation_2 = visual.Line(win=win, start=(0.0, -fixation_cross_size), end=(0.0,fixation_cross_size), **{'lineColor':'white', 'lineWidth' :5.0})
+        #self.fixation_1 = visual.Line(win=win, start=(-fixation_cross_size * 0.56, 0.0), end=(fixation_cross_size * 0.56, 0.0), **{'lineColor':'white', 'lineWidth' :5.0})
+        #self.fixation_2 = visual.Line(win=win, start=(0.0, -fixation_cross_size), end=(0.0,fixation_cross_size), **{'lineColor':'white', 'lineWidth' :5.0})
+        
+        self.fixation_1 = visual.Circle(win = win, units = 'pix', radius = 10, **{'pos' : (0,0), 'fillColor': 'white'})
+        self.fixation_2 = visual.Circle(win = win, units = 'pix', radius = 4, **{'pos' : (0,0), 'fillColor': 'black'})
+        
 
         self.fixation_1.setAutoDraw(True)
         self.fixation_2.setAutoDraw(True)
         
+
     def randomize_response_instruction(self):
 
         instructions = ['non-match', 'match']
@@ -73,31 +78,6 @@ class instructions_params(object):
 
         return order
 
-#    def color_feedback(self, response):
-#
-#        #self.toggle_fixation()
-#
-#
-#        if(response == 'correct'):
-#            self.correct_sound.play()
-#
-#            self.fixation_1.lineColor = 'green'
-#            self.fixation_2.lineColor = 'green'
-#        if(response == 'wrong'):
-#            self.incorrect_sound.play()
-#
-#            self.fixation_1.lineColor = 'red'
-#            self.fixation_2.lineColor = 'red'
-#        
-#        self.toggle_fixation()
-
-
-#    def reset_feedback(self):
-#
-#        self.toggle_fixation()
-#
-#        self.fixation_1.lineColor = 'white'
-#        self.fixation_2.lineColor = 'white'
 
 
     def toggle_fixation(self):
@@ -113,68 +93,89 @@ class trial_controller(object):
     # Second gabor which is compared to the target and answered if it is the same
     sample_gabor = visual.GratingStim(win=win, mask='gauss', texRes = 2**9, units = 'deg', size = (gabor_size, gabor_size), tex = 'tri', sf = 1, interpolate = True)
 
-    frame = visual.ShapeStim(win = win, units='norm', lineWidth=50, lineColor='green', lineColorSpace='rgb', fillColor=None, fillColorSpace='rgb', 
+    frame = visual.ShapeStim(win = win, units='norm', lineWidth=30, lineColor='green', lineColorSpace='rgb', fillColor=None, fillColorSpace='rgb', 
                              vertices=[ [-1.0, -1.0] , [-1.0, 1.0] , [1.0,1.0] , [1.0,-1.0] ], closeShape=True,
-                             pos=(0, 0), size=1, ori=0.0, opacity=1.0, contrast=1.0, depth=0, interpolate=True, 
+                             pos=(0, 0), size=1, ori=0.0, opacity=1.0, contrast=1.0, interpolate=True, 
                              name=None, autoLog=None, autoDraw=True)
     
-    sensor_square = visual.Rect(win = win, width=0.4, height=0.4, **{'pos' : (1,-1), 'fillColor': 'white'})
+    sensor_square = visual.Rect(win = win, width=0.1, height=0.15, **{'pos' : (0.8,0), 'fillColor': 'white', 'units' : 'norm'})
+    
 
-
-    match_angles = []
 
     def __init__(self, num_trials):
 
          # Pseudo random shuffled list of probe angles
-        self.match_angles = self.create_sample_angles(num_trials)
+        self.match_angles = self.create_match_angles(num_trials)
+        
+        # List of the first gabor angles
+        self.binned_angles = self.create_binned_angles(num_trials)
 
 
 
     def prepare_trial(self):
-       
-        # Change probe orientation by adding a value from the probe_orientations list
-        t_type, angle = self.match_angles.pop()
+        # Select the angle for the first gabor, i.e. the sample
+        angle_bin, first_angle = self.binned_angles.pop()
+        # Set the orientation of the first gabor
+        self.sample_gabor.setOri(first_angle)
+        # Select the angle for the change in the second gabor, it could be 0 (match) or something (non-match)
+        t_type, probe_angle = self.match_angles.pop()
+        # Store the parameters in the dict to be used for logging and changing the second gabor orientation
+        trial_angles = {'t_type' : t_type, 'probe_angle' : probe_angle, 'angle_bin' : angle_bin, 'first_angle' : first_angle}
 
-        self.sample_gabor.setOri(np.random.normal(0, 360))
-
-        return t_type, angle
-
- 
-    def select_sample_angle(self,angle):
-        """ Pseudo-random shuffle from a collection of angles defined by staircase, relatively big differences and zero differences
-        """
-        
-        # Toss a coin to choose the angle either in clockwise or counterclockwise direction
-        if(np.random.choice([True, False])):
-            angle = angle * -1
-        
-        return angle
+        return trial_angles
 
 
-    def create_sample_angles(self, num_trials):
-        global NUM_CONTROL
+
+
+    def create_match_angles(self, num_trials):
         # Define proportion of trials for each angle value
-        num_diff= int(num_trials * 0.5)
-        #num_big = int(num_trials * 0.05)
-        num_same = int(num_trials * 0.5)
+        num_diff= int(num_trials * 0.4) # Non match
+
+        num_same = int(num_trials * 0.4) # Match
         
-        num_control = NUM_CONTROL
+        num_control = int(num_trials * 0.2) # Control
         
         #load the staircase results
         # calculate the average of the last two levels used, this will either be the last stable success (upper bound) or include the error, i.e. lower bound
         #threshold = explore.describe_staircase(expInfo['participant']) if explore.describe_staircase(expInfo['participant']) >= 0.5 else 0.5
-        threshold = 5.0
+        #THRESHOLD
+        threshold = 15.0
+        
         print('threshold %.4f'%threshold)
         # Value used for the type of trials where the difference should be clearly visible
 
         # Add the angle values in the amounts specified bu num trials proportions
         angle_list = [('match', 0) for s in range(num_same)]
-        angle_list.extend([('non-match' , threshold) for d in range(num_diff)])
+        angle_list.extend([('non-match', self.random_reflect_angle(threshold)) for d in range(num_diff)])
         angle_list.extend([('control' , None) for c in range(num_control)])
         # put the list in random order the list
         random.shuffle(angle_list)
+        
 
         return list(angle_list)
+    
+    def random_reflect_angle(self, angle):
+        # Toss a coin to choose the angle either in clockwise or counterclockwise direction
+        if(np.random.choice([True, False])):
+            angle = angle * -1            
+        return angle
+    
 
+
+    def create_binned_angles(self, num_trials):
+        """Create angles for the first gabors from a set of binned orientations. 
+        The bins are from 0 to 157.5 with step of 22.5 degrees based on Ester 2013"""
+        
+        bins = np.arange(0, 180, 22.5)
+        
+        angle_list = []
+        for category_angle in bins:
+            for single_angle in range(int(math.ceil(float(num_trials) / len(bins)))):
+                angle = category_angle + np.random.uniform(-10,10)
+                angle_list.append([category_angle, angle])
+        
+        random.shuffle(angle_list)
+        
+        return angle_list
 
 
