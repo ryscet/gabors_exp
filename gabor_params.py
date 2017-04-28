@@ -5,8 +5,8 @@ Gabors for variables related to psychopy
 """
 import pygame 
 from psychopy import prefs
-prefs.general['audioLib'] = ['pygame']
-from psychopy import visual, core,  monitors, gui, data, sound #import some libraries from PsychoPy
+
+from psychopy import visual, core,  monitors, gui, data #import some libraries from PsychoPy
 import numpy as np
 import pandas as pd
 import random 
@@ -28,7 +28,7 @@ mon = monitors.Monitor('dell', width= 54.61, distance=57)
 mon.setSizePix((1920, 1080))
 win = visual.Window( fullscr = True, winType  ='pyglet', screen =0, waitBlanking = True, checkTiming = True, monitor = mon)
 win.mouseVisible = False
-gabor_size = 10
+gabor_size = 11
 fixation_cross_size = 0.02
 
 
@@ -39,9 +39,6 @@ class instructions_params(object):
 
     dir_path = os.path.dirname(os.path.realpath(__file__))
 
-    correct_sound = sound.Sound(dir_path + '/resources/correct.ogg')
-    incorrect_sound = sound.Sound(dir_path + '/resources/incorrect.ogg')
-    print(dir_path)
 
     def __init__(self):
         
@@ -89,16 +86,40 @@ class instructions_params(object):
 class trial_controller(object):
     # The gabor which appears first
     #cue_triangle = visual.Polygon(win=win, edges = 3, units='norm', size=(0.4, 0.2), fillColor = 'black', lineColor = 'black', ori = 90)
-
+    width = 0.025
+    height = 0.040
+    frame_draw = True
+    frame_color = 'DarkGreen'
     # Second gabor which is compared to the target and answered if it is the same
-    sample_gabor = visual.GratingStim(win=win, mask='gauss', texRes = 2**9, units = 'deg', size = (gabor_size, gabor_size), tex = 'tri', sf = 1, interpolate = True)
+    sample_gabor = visual.GratingStim(win=win, mask='gauss', texRes = 2**9, 
+                                      units = 'deg', size = (gabor_size, gabor_size), 
+                                      tex = 'sin', sf = 1, interpolate = True,
+                                      depth = 1)
 
-    frame = visual.ShapeStim(win = win, units='norm', lineWidth=30, lineColor='green', lineColorSpace='rgb', fillColor=None, fillColorSpace='rgb', 
-                             vertices=[ [-1.0, -1.0] , [-1.0, 1.0] , [1.0,1.0] , [1.0,-1.0] ], closeShape=True,
-                             pos=(0, 0), size=1, ori=0.0, opacity=1.0, contrast=1.0, interpolate=True, 
-                             name=None, autoLog=None, autoDraw=True)
+
+
+    left = visual.Rect(win = win, width = width, height = 1, 
+                        **dict(units='norm',  fillColor=frame_color, fillColorSpace='rgb', lineColor= None,
+                               pos=(-1, 0), size=2,  interpolate=False,
+                               autoDraw=frame_draw))
+    right = visual.Rect(win = win, width = width, height = 2, 
+                        **dict(units='norm',  fillColor=frame_color, fillColorSpace='rgb', lineColor= None,
+                               pos=(1, 0), size=2,  interpolate=False,
+                               autoDraw=frame_draw))
+
+    top = visual.Rect(win = win, width = 1, height = height, 
+                        **dict(units='norm',  fillColor=frame_color, fillColorSpace='rgb', lineColor= None,
+                               pos=(0, 1), size=2,  interpolate=False,
+                               autoDraw=frame_draw))
+    bottom = visual.Rect(win = win, width = 1, height = height, 
+                        **dict(units='norm',  fillColor= frame_color, fillColorSpace='rgb', lineColor= None,
+                               pos=(0, -1), size=2,  interpolate=False,
+                               autoDraw=frame_draw))
+
+
+
     
-    sensor_square = visual.Rect(win = win, width=0.1, height=0.15, **{'pos' : (0.8,0), 'fillColor': 'white', 'units' : 'norm'})
+    sensor_square = visual.Rect(win = win, width=0.1, height=0.15, **{'pos' : (0.8,-0.2), 'fillColor': 'white', 'units' : 'norm'})
     
 
 
@@ -123,6 +144,18 @@ class trial_controller(object):
         trial_angles = {'t_type' : t_type, 'probe_angle' : probe_angle, 'angle_bin' : angle_bin, 'first_angle' : first_angle}
 
         return trial_angles
+
+    def toggle_frame(self,toggle):
+        self.left.setAutoDraw(toggle)
+        self.right.setAutoDraw(toggle)
+        self.top.setAutoDraw(toggle)
+        self.bottom.setAutoDraw(toggle)
+
+    def set_frame_color(self, color):
+        self.left.fillColor = color
+        self.right.fillColor = color
+        self.top.fillColor = color
+        self.bottom.fillColor = color
 
 
 

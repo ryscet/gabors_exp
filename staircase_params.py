@@ -25,7 +25,7 @@ mon = monitors.Monitor('dell', width= 54.61, distance=57)
 mon.setSizePix((1920, 1080))
 win = visual.Window( fullscr = True, winType  ='pyglet', screen =0, waitBlanking = True, checkTiming = True, monitor = mon)
 win.mouseVisible = False
-gabor_size = 10
+gabor_size = 11
 fixation_cross_size = 0.02
 
 # Define the target to be detected
@@ -56,7 +56,10 @@ class instructions_params(object):
 class trial_controller(object):
     
 
-    sample_gabor = visual.GratingStim(win=win, mask='gauss', texRes = 2**9, units = 'deg', size = (gabor_size, gabor_size), tex = 'tri', sf = 1, interpolate = True)
+    sample_gabor = visual.GratingStim(win=win, mask='gauss', texRes = 2**9, 
+                                      units = 'deg', size = (gabor_size, gabor_size), 
+                                      tex = 'sin', sf = 1, interpolate = True,
+                                      depth = 1)
 
     # Info for staircase procedure
     last_two_responses = []

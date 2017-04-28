@@ -30,7 +30,7 @@ probe_time = 1.0 # probe onscreen time
 ITI = 3.0 # between trial (from response untill new target)
 response_wait = 2.0
 ### SETUP PARAMETERS ###
-num_trials = 15 # First draft of staircase length, use fixed num of trials
+num_trials = 40 # First draft of staircase length, use fixed num of trials
 
 def main():
     

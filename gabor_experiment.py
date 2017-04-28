@@ -12,8 +12,6 @@ Experiment:
 """
 from psychopy import prefs
 
-from psychopy import sound 
-
 import pandas as pd
 import numpy as np
 from datetime import datetime
@@ -25,12 +23,12 @@ from psychopy import event, core
 
 import gabor_params as params #My own helper class
 
-LIGHT_SENSOR = False # Whether to display the white square to mark stimulus onscreen with a light sensor
+LIGHT_SENSOR = True # Whether to display the white square to mark stimulus onscreen with a light sensor
 
 ### SETUP PARAMETERS ###
 refresh_rate = 60 # screen refresh rate in Hz. Compare it against check results returned by check.py
 
-num_trials = 10 # First draft of staircase length, use fixed num of trials
+num_trials = 50 # First draft of staircase length, use fixed num of trials
 # Stimulus timings from Serences 2009
 sample_presentation_time = 1.0 # onscreen target 
 ISI = 5.0 # empty screen between target and probe
@@ -73,12 +71,14 @@ def main(t_control):
         t_type, probe_angle, angle_bin, first_angle = trial_angles['t_type'], trial_angles['probe_angle'], trial_angles['angle_bin'],trial_angles['first_angle'] 
 
         # COLOR FRAME for trial type, hold (DMTS) or drop (control)
-        t_control.frame.autoDraw = True
+        t_control.toggle_frame(True)
         if(t_type == 'control'):
-            t_control.frame.lineColor = 'DarkRed'
+            t_control.set_frame_color('DarkRed')
+            
+
         else:
-            t_control.frame.lineColor = 'DarkGreen'
-        
+            t_control.set_frame_color('DarkGreen')
+
         
         #### ITI ####
         ITI_time = pd.to_datetime(datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))
@@ -109,7 +109,7 @@ def main(t_control):
         ISI_time_psychopy = clock.getTime()
         
         for frame in range(int(ISI * refresh_rate)):
-            if frame == int(ISI * refresh_rate / 10.0) : t_control.frame.autoDraw = False # Hide the frame informing about trial type
+            if frame == int(ISI * refresh_rate / 10.0) : t_control.toggle_frame(False) # Hide the frame informing about trial type
 
             params.win.flip() #Empty screen, only fixation cross
         
