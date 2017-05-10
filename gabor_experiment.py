@@ -23,12 +23,12 @@ from psychopy import event, core
 
 import gabor_params as params #My own helper class
 
-LIGHT_SENSOR = True # Whether to display the white square to mark stimulus onscreen with a light sensor
+LIGHT_SENSOR = False # Whether to display the white square to mark stimulus onscreen with a light sensor
 
 ### SETUP PARAMETERS ###
 refresh_rate = 60 # screen refresh rate in Hz. Compare it against check results returned by check.py
 
-num_trials = 50 # First draft of staircase length, use fixed num of trials
+num_trials = 80 # First draft of staircase length, use fixed num of trials
 # Stimulus timings from Serences 2009
 sample_presentation_time = 1.0 # onscreen target 
 ISI = 5.0 # empty screen between target and probe

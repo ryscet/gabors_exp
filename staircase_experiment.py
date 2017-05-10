@@ -7,8 +7,6 @@ Experiment:
 """
 from psychopy import prefs
 
-from psychopy import sound 
-
 import pandas as pd
 import numpy as np
 from datetime import datetime

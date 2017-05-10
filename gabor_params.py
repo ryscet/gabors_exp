@@ -32,7 +32,6 @@ gabor_size = 11
 fixation_cross_size = 0.02
 
 
-NUM_CONTROL = 30  # Number of control, or 'drop trials'
 
 # Define the target to be detected
 class instructions_params(object):
