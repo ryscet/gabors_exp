@@ -71,13 +71,14 @@ def main(t_control):
         t_type, probe_angle, angle_bin, first_angle = trial_angles['t_type'], trial_angles['probe_angle'], trial_angles['angle_bin'],trial_angles['first_angle'] 
 
         # COLOR FRAME for trial type, hold (DMTS) or drop (control)
-        t_control.toggle_frame(True)
+       # t_control.toggle_frame(True)
         if(t_type == 'control'):
-            t_control.set_frame_color('DarkRed')
-            
+           # t_control.set_frame_color('DarkRed')
+            gui.set_fixation_color('Red')
 
         else:
-            t_control.set_frame_color('DarkGreen')
+            #t_control.set_frame_color('DarkGreen')
+            gui.set_fixation_color('Green')
 
         
         #### ITI ####
@@ -109,7 +110,7 @@ def main(t_control):
         ISI_time_psychopy = clock.getTime()
         
         for frame in range(int(ISI * refresh_rate)):
-            if frame == int(ISI * refresh_rate / 10.0) : t_control.toggle_frame(False) # Hide the frame informing about trial type
+           # if frame == int(ISI * refresh_rate / 10.0) : t_control.toggle_frame(False) # Hide the frame informing about trial type
 
             params.win.flip() #Empty screen, only fixation cross
         
@@ -128,6 +129,12 @@ def main(t_control):
                             }
             
             pd_log = log_trial(pd_log, trial, **saved_db[trial])
+            
+            #t_control.toggle_frame(False)
+            gui.set_fixation_color('white')
+                    ### ITI 2###
+            for frame in range(int( ITI_2 * refresh_rate)):
+                params.win.flip() # Draw an empty screen for short period after probe and then show the anwsers's instructions
 
             continue
 
@@ -149,6 +156,9 @@ def main(t_control):
 
 
         ### RESPONSE ###
+        #t_control.toggle_frame(False)
+
+        gui.set_fixation_color('white')
 
         order = gui.randomize_response_instruction()
 
@@ -173,6 +183,7 @@ def main(t_control):
                 if thisKey == 'num_5':
                     thisResp = 'middle'
                     correct = 'dont know'
+                    print('dont know')
 
                         
                 elif thisKey == 'num_6':

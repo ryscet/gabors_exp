@@ -134,7 +134,7 @@ class trial_controller(object):
         """Create angles for the first gabors from a set of binned orientations. 
         The bins are from 0 to 157.5 with step of 22.5 degrees based on Ester 2013"""
         
-        bins = np.arange(0, 180, 22.5)
+        bins = np.array([22.5, 45, 67.5, 112.5, 135, 157.5])
         
         angle_list = []
         for category_angle in bins:

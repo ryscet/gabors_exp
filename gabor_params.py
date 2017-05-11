@@ -52,7 +52,7 @@ class instructions_params(object):
         #self.fixation_2 = visual.Line(win=win, start=(0.0, -fixation_cross_size), end=(0.0,fixation_cross_size), **{'lineColor':'white', 'lineWidth' :5.0})
         
         self.fixation_1 = visual.Circle(win = win, units = 'pix', radius = 10, **{'pos' : (0,0), 'fillColor': 'white'})
-        self.fixation_2 = visual.Circle(win = win, units = 'pix', radius = 4, **{'pos' : (0,0), 'fillColor': 'black'})
+        self.fixation_2 = visual.Circle(win = win, units = 'pix', radius = 3, **{'pos' : (0,0), 'fillColor': 'black', 'lineColor' : 'black'})
         
 
         self.fixation_1.setAutoDraw(True)
@@ -80,6 +80,10 @@ class instructions_params(object):
         self.fixation_1.setAutoDraw(not self.fixation_1.autoDraw)
         self.fixation_2.setAutoDraw(not self.fixation_2.autoDraw)
 
+    def set_fixation_color(self, color):
+        self.fixation_1.setFillColor(color)
+        self.fixation_1.setLineColor(color)
+
 
 
 class trial_controller(object):
@@ -87,7 +91,7 @@ class trial_controller(object):
     #cue_triangle = visual.Polygon(win=win, edges = 3, units='norm', size=(0.4, 0.2), fillColor = 'black', lineColor = 'black', ori = 90)
     width = 0.025
     height = 0.040
-    frame_draw = True
+   # frame_draw = True
     frame_color = 'DarkGreen'
     # Second gabor which is compared to the target and answered if it is the same
     sample_gabor = visual.GratingStim(win=win, mask='gauss', texRes = 2**9, 
@@ -97,23 +101,23 @@ class trial_controller(object):
 
 
 
-    left = visual.Rect(win = win, width = width, height = 1, 
-                        **dict(units='norm',  fillColor=frame_color, fillColorSpace='rgb', lineColor= None,
-                               pos=(-1, 0), size=2,  interpolate=False,
-                               autoDraw=frame_draw))
-    right = visual.Rect(win = win, width = width, height = 2, 
-                        **dict(units='norm',  fillColor=frame_color, fillColorSpace='rgb', lineColor= None,
-                               pos=(1, 0), size=2,  interpolate=False,
-                               autoDraw=frame_draw))
-
-    top = visual.Rect(win = win, width = 1, height = height, 
-                        **dict(units='norm',  fillColor=frame_color, fillColorSpace='rgb', lineColor= None,
-                               pos=(0, 1), size=2,  interpolate=False,
-                               autoDraw=frame_draw))
-    bottom = visual.Rect(win = win, width = 1, height = height, 
-                        **dict(units='norm',  fillColor= frame_color, fillColorSpace='rgb', lineColor= None,
-                               pos=(0, -1), size=2,  interpolate=False,
-                               autoDraw=frame_draw))
+#    left = visual.Rect(win = win, width = width, height = 1, 
+#                        **dict(units='norm',  fillColor=frame_color, fillColorSpace='rgb', lineColor= None,
+#                               pos=(-1, 0), size=2,  interpolate=False,
+#                               autoDraw=frame_draw))
+#    right = visual.Rect(win = win, width = width, height = 2, 
+#                        **dict(units='norm',  fillColor=frame_color, fillColorSpace='rgb', lineColor= None,
+#                               pos=(1, 0), size=2,  interpolate=False,
+#                               autoDraw=frame_draw))
+#
+#    top = visual.Rect(win = win, width = 1, height = height, 
+#                        **dict(units='norm',  fillColor=frame_color, fillColorSpace='rgb', lineColor= None,
+#                               pos=(0, 1), size=2,  interpolate=False,
+#                               autoDraw=frame_draw))
+#    bottom = visual.Rect(win = win, width = 1, height = height, 
+#                        **dict(units='norm',  fillColor= frame_color, fillColorSpace='rgb', lineColor= None,
+#                               pos=(0, -1), size=2,  interpolate=False,
+#                               autoDraw=frame_draw))
 
 
 
@@ -144,17 +148,17 @@ class trial_controller(object):
 
         return trial_angles
 
-    def toggle_frame(self,toggle):
-        self.left.setAutoDraw(toggle)
-        self.right.setAutoDraw(toggle)
-        self.top.setAutoDraw(toggle)
-        self.bottom.setAutoDraw(toggle)
+#    def toggle_frame(self,toggle):
+#        self.left.setAutoDraw(toggle)
+#        self.right.setAutoDraw(toggle)
+#        self.top.setAutoDraw(toggle)
+#        self.bottom.setAutoDraw(toggle)
 
-    def set_frame_color(self, color):
-        self.left.fillColor = color
-        self.right.fillColor = color
-        self.top.fillColor = color
-        self.bottom.fillColor = color
+#    def set_frame_color(self, color):
+#        self.left.fillColor = color
+#        self.right.fillColor = color
+#        self.top.fillColor = color
+#        self.bottom.fillColor = color
 
 
 
@@ -198,7 +202,7 @@ class trial_controller(object):
         """Create angles for the first gabors from a set of binned orientations. 
         The bins are from 0 to 157.5 with step of 22.5 degrees based on Ester 2013"""
         
-        bins = np.arange(0, 180, 22.5)
+        bins = np.array([22.5, 45, 67.5, 112.5, 135, 157.5])
         
         angle_list = []
         for category_angle in bins:
