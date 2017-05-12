@@ -74,10 +74,13 @@ def main():
         #### TARGET ####
         target_appeared = pd.to_datetime(datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))
         target_appeared_psychopy = clock.getTime()
-        
-        # WE SET SAMPLE OREINATATION HERE
-        
+                
         for frame in range(int(sample_presentation_time * refresh_rate)):
+            
+            if(frame % phase_frames == 0):
+                print(frame)
+                sample.setPhase(phase_step, '+')
+
             sample_gabor.draw() # First cue # First cue, OREINTAION SET IN gabor_params in prepare_trial()
             params.win.flip()
     
@@ -96,6 +99,11 @@ def main():
         probe_appeared_psychopy = clock.getTime()
         
         for frame in range(int(probe_time * refresh_rate)):
+
+            if(frame % phase_frames == 0):
+                print(frame)
+                sample.setPhase(phase_step, '+')
+
             sample_gabor.draw() # Second gabor
             params.win.flip()
 

@@ -94,10 +94,7 @@ class trial_controller(object):
    # frame_draw = True
     frame_color = 'DarkGreen'
     # Second gabor which is compared to the target and answered if it is the same
-    sample_gabor = visual.GratingStim(win=win, mask='gauss', texRes = 2**9, 
-                                      units = 'deg', size = (gabor_size, gabor_size), 
-                                      tex = 'sin', sf = 1, interpolate = True,
-                                      depth = 1)
+
 
 
 
@@ -127,13 +124,15 @@ class trial_controller(object):
 
 
     def __init__(self, num_trials):
-
+        self.sample_gabor = visual.GratingStim(win=win, mask='gauss', texRes = 2**9, phase = (90,30),
+                                      units = 'deg', size = (gabor_size, gabor_size), 
+                                      tex = 'sin', sf = 1, interpolate = True,
+                                      depth = 1)
          # Pseudo random shuffled list of probe angles
         self.match_angles = self.create_match_angles(num_trials)
         
         # List of the first gabor angles
         self.binned_angles = self.create_binned_angles(num_trials)
-
 
 
     def prepare_trial(self):

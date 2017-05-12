@@ -18,7 +18,7 @@ from datetime import datetime
 from collections import OrderedDict
 import pickle 
 import os 
-
+import random
 from psychopy import event, core
 
 import gabor_params as params #My own helper class
@@ -38,6 +38,8 @@ ITI_2 = 3.0
 
 response_wait = 1.0
 
+phase_step = 0.5 
+phase_frames = 20
 
 ### CONTROLLER OBJECT ###
 
@@ -66,7 +68,7 @@ def main(t_control):
 
     for trial in range(num_trials):    
         
-        trial_angles =  t_control.prepare_trial() # Generates angles from shuffled list
+        trial_angles = t_control.prepare_trial() # Generates angles from shuffled list
          
         t_type, probe_angle, angle_bin, first_angle = trial_angles['t_type'], trial_angles['probe_angle'], trial_angles['angle_bin'],trial_angles['first_angle'] 
 
@@ -90,19 +92,23 @@ def main(t_control):
         
 
         #### TARGET ####
-        
+        #OREINTAION SET IN gabor_params in prepare_trial()
         target_appeared = pd.to_datetime(datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))
         target_appeared_psychopy = clock.getTime()
         
         # SET SAMPLE OREINATATION HERE
         
         for frame in range(int(sample_presentation_time * refresh_rate)):
-            sample.draw() # First cue, OREINTAION SET IN gabor_params in prepare_trial()
-            
+
+            if(frame % phase_frames == 0):
+                sample.setPhase(phase_step, '+')
+
+            sample.draw() # First cue,
+                
             if(LIGHT_SENSOR): t_control.sensor_square.draw()
             
             params.win.flip()
-            
+
     
         ### ISI ###
         
@@ -145,6 +151,10 @@ def main(t_control):
         probe_appeared_psychopy = clock.getTime()
         
         for frame in range(int(probe_time * refresh_rate)):
+
+            if(frame % phase_frames == 0):
+                sample.setPhase(phase_step, '+')
+
             sample.draw() # Second gabor
             if(LIGHT_SENSOR) : t_control.sensor_square.draw()
             params.win.flip()
@@ -176,17 +186,17 @@ def main(t_control):
             allKeys=event.waitKeys()
             for thisKey in allKeys:
                     
-                if thisKey== 'num_4':
+                if thisKey== 'num_4' or thisKey== 'a' :
                     thisResp = 'left'
                     correct = check_response(thisResp, t_type, order)
                 
-                if thisKey == 'num_5':
+                if thisKey == 'num_5' or thisKey== 's':
                     thisResp = 'middle'
                     correct = 'dont know'
                     print('dont know')
 
                         
-                elif thisKey == 'num_6':
+                elif thisKey == 'num_6' or thisKey== 'd':
                     thisResp = 'right'
                     correct = check_response(thisResp, t_type, order)
 
@@ -286,7 +296,10 @@ def OnQuit(pd_log, saved_db):
     with open(dir_path + '/exp_logs/' + params.expInfo['participant'] + datetime.now().strftime('_%Y_%m_%d_') + 'log.pickle', 'wb') as handle:
         pickle.dump(saved_db, handle)
     print('logs saved')
-
+def random_color():
+    rgbl=[255,0,0]
+    random.shuffle(rgbl)
+    return tuple(rgbl)
     
 if __name__ == '__main__':
     main(trial_controler)
