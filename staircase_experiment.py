@@ -58,6 +58,8 @@ def main():
 
     sample = t_control.sample_gabor
 
+
+
     for trial in range(num_trials):
         
         trial_angles = t_control.decide_stair(accuracy)
@@ -81,7 +83,6 @@ def main():
         for frame in range(int(sample_presentation_time * refresh_rate)):
             
             if(frame % phase_frames == 0):
-                print(frame)
                 sample.setPhase(phase_step, '+')
 
             sample.draw() # First cue # First cue, OREINTAION SET IN gabor_params in prepare_trial()
@@ -189,9 +190,9 @@ def main():
 def OnQuit(dir_path, pd_log, saved_db):
     """Called at the end of script and saves logs to disk"""    
     
-    file = open(dir_path +'/stair_logs/'+ params.expInfo['participant'] + '.csv' + '.csv', 'a')
+    file = open(dir_path +'/stair_logs/'+ params.expInfo['participant'] + '.csv', 'a')
 
-    file.write('#Experiment Started:' + START_TIME + '\n')
+    file.write('#Experiment Started')
 
     pd_log.to_csv(file, index_label = 'index_copy')
 

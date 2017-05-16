@@ -295,7 +295,7 @@ def OnQuit(pd_log, saved_db):
 
     file = open(dir_path +'/exp_logs/'+ params.expInfo['participant'] + '.csv', 'a')
 
-    file.write('#Experiment Started:' + START_TIME + '\n')
+    file.write('#Experiment Started')
 
     pd_log.to_csv(file, index_label = 'index_copy')
 

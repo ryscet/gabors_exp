@@ -3,7 +3,7 @@
 """
 Gabors for variables related to psychopy
 """
-from psychopy import visual, core, monitors, gui, data #import some libraries from PsychoPy
+from psychopy import visual, core, monitors, gui, data, event #import some libraries from PsychoPy
 import numpy as np
 import pandas as pd
 import random 
@@ -25,6 +25,10 @@ mon = monitors.Monitor('dell', width= 54.61, distance=57)
 mon.setSizePix((1920, 1080))
 win = visual.Window( fullscr = True, winType  ='pyglet', screen =0, waitBlanking = True, checkTiming = True, monitor = mon)
 win.mouseVisible = False
+
+event.Mouse(win = win).setVisible(False)
+
+
 gabor_size = 11
 fixation_cross_size = 0.02
 

@@ -58,7 +58,8 @@ def test_different_angles(a, b):
         
         
 def describe_staircase(subject_name, plot = False):
-    results = pd.read_csv(find_latest_log(subject_name))
+    #results = pd.read_csv(find_latest_log(subject_name))
+    results = pd.read_csv('D:/Users/rcetnarski/Desktop/gabors_exp/stair_logs/kasiaj2.csv.csv')
     results.replace({'accuracy': {'correct' :1, 'wrong' : 0}}, inplace = True)
     
     slopes = np.insert(np.diff(results['diff_index'].as_matrix(),1),0,0)
