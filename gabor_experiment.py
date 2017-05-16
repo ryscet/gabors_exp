@@ -292,14 +292,20 @@ def check_response(response, trial_type, order):
 def OnQuit(pd_log, saved_db):
     """Called at the end of script and saves logs to disk"""    
     print('Saving logs')
-    pd_log.to_csv(dir_path +'/exp_logs/'+ params.expInfo['participant'] + '.csv', index_label = 'index_copy')
+
+    file = open(dir_path +'/exp_logs/'+ params.expInfo['participant'] + '.csv', 'a')
+
+    file.write('#Experiment Started:' + START_TIME + '\n')
+
+    pd_log.to_csv(file, index_label = 'index_copy')
+
+    file.write('#Experiment Ended:' + str(pd.to_datetime(datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))))
+
     with open(dir_path + '/exp_logs/' + params.expInfo['participant'] + datetime.now().strftime('_%Y_%m_%d_') + 'log.pickle', 'wb') as handle:
         pickle.dump(saved_db, handle)
     print('logs saved')
-def random_color():
-    rgbl=[255,0,0]
-    random.shuffle(rgbl)
-    return tuple(rgbl)
+
+
     
 if __name__ == '__main__':
     main(trial_controler)

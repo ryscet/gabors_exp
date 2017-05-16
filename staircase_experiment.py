@@ -30,6 +30,9 @@ response_wait = 2.0
 ### SETUP PARAMETERS ###
 num_trials = 40 # First draft of staircase length, use fixed num of trials
 
+phase_step = 0.5 
+phase_frames = 20
+
 def main():
     
     # Initialize timestamps
@@ -53,7 +56,7 @@ def main():
 
     dir_path = os.path.dirname(os.path.realpath(__file__))
 
-    sample_gabor = t_control.sample_gabor
+    sample = t_control.sample_gabor
 
     for trial in range(num_trials):
         
@@ -81,7 +84,7 @@ def main():
                 print(frame)
                 sample.setPhase(phase_step, '+')
 
-            sample_gabor.draw() # First cue # First cue, OREINTAION SET IN gabor_params in prepare_trial()
+            sample.draw() # First cue # First cue, OREINTAION SET IN gabor_params in prepare_trial()
             params.win.flip()
     
         ### ISI ###
@@ -93,7 +96,7 @@ def main():
         
         
         #### PROBE ####
-        sample_gabor.setOri(sample_gabor.ori + probe_angle) # Change the orientation according to staircase
+        sample.setOri(sample.ori + probe_angle) # Change the orientation according to staircase
         
         probe_appeared = pd.to_datetime(datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))
         probe_appeared_psychopy = clock.getTime()
@@ -104,7 +107,7 @@ def main():
                 print(frame)
                 sample.setPhase(phase_step, '+')
 
-            sample_gabor.draw() # Second gabor
+            sample.draw() # Second gabor
             params.win.flip()
 
 
@@ -127,10 +130,10 @@ def main():
             allKeys=event.waitKeys()
             for thisKey in allKeys:
                 print(thisKey)
-                if thisKey=='num_4':
+                if thisKey=='num_4'  or thisKey== 'a' :
                     thisResp = 'correct'
                         
-                elif thisKey == 'num_6':
+                elif thisKey == 'num_6'  or thisKey== 'd':
                     thisResp = 'wrong'
 
                 elif thisKey in ['escape']:
@@ -186,7 +189,15 @@ def main():
 def OnQuit(dir_path, pd_log, saved_db):
     """Called at the end of script and saves logs to disk"""    
     
-    pd_log.to_csv(dir_path +'/stair_logs/'+ params.expInfo['participant'] + '.csv', index_label = 'index_copy')
+    file = open(dir_path +'/stair_logs/'+ params.expInfo['participant'] + '.csv' + '.csv', 'a')
+
+    file.write('#Experiment Started:' + START_TIME + '\n')
+
+    pd_log.to_csv(file, index_label = 'index_copy')
+
+    file.write('#Experiment Ended:' + str(pd.to_datetime(datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f'))))
+
+
     with open(dir_path + '/stair_logs/' + params.expInfo['participant'] + datetime.now().strftime('_%Y_%m_%d_') + 'log.pickle', 'wb') as handle:
         pickle.dump(saved_db, handle)
     
