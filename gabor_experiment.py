@@ -28,7 +28,7 @@ LIGHT_SENSOR = False # Whether to display the white square to mark stimulus onsc
 ### SETUP PARAMETERS ###
 refresh_rate = 60 # screen refresh rate in Hz. Compare it against check results returned by check.py
 
-num_trials = 80 # First draft of staircase length, use fixed num of trials
+num_trials = 120 # First draft of staircase length, use fixed num of trials
 # Stimulus timings from Serences 2009
 sample_presentation_time = 1.0 # onscreen target 
 ISI = 5.0 # empty screen between target and probe
@@ -67,6 +67,13 @@ def main(t_control):
     sample = t_control.sample_gabor
 
     for trial in range(num_trials):    
+
+        #if trial = int(num_trials /2.0):
+        if trial == 60:
+            gui.pause_screen.draw()
+            params.win.flip()
+            event.waitKeys()
+
         
         trial_angles = t_control.prepare_trial() # Generates angles from shuffled list
          
@@ -295,7 +302,7 @@ def OnQuit(pd_log, saved_db):
 
     file = open(dir_path +'/exp_logs/'+ params.expInfo['participant'] + '.csv', 'a')
 
-    file.write('#Experiment Started')
+    file.write('#Experiment Started\n')
 
     pd_log.to_csv(file, index_label = 'index_copy')
 

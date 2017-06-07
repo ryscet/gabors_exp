@@ -26,7 +26,7 @@ expInfo['expName'] = expName
 #Define the main application window
 mon = monitors.Monitor('dell', width= 54.61, distance=57)
 mon.setSizePix((1920, 1080))
-win = visual.Window( fullscr = True, winType  ='pyglet', screen =0, waitBlanking = True, checkTiming = True, monitor = mon)
+win = visual.Window( size=[1920,1080], fullscr = True, winType  ='pyglet', screen =0, waitBlanking = True, checkTiming = True, monitor = mon)
 win.mouseVisible = False
 event.Mouse(win = win).setVisible(False)
 
@@ -48,6 +48,7 @@ class instructions_params(object):
         
         self.bottom_response = visual.TextStim(win,'', color='blue', pos = (0.5, 0.0))
      
+        self.pause_screen = visual.TextStim(win,'Please take a break.\n\nPress any key to continue.', color='white', pos = (0.0, 0.0))
         
 # multiply by height to width ratio to get perfect square - 1080/1920
         #self.fixation_1 = visual.Line(win=win, start=(-fixation_cross_size * 0.56, 0.0), end=(fixation_cross_size * 0.56, 0.0), **{'lineColor':'white', 'lineWidth' :5.0})

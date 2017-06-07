@@ -23,7 +23,7 @@ expInfo['expName'] = expName
 #Define the main application window
 mon = monitors.Monitor('dell', width= 54.61, distance=57)
 mon.setSizePix((1920, 1080))
-win = visual.Window( fullscr = True, winType  ='pyglet', screen =0, waitBlanking = True, checkTiming = True, monitor = mon)
+win = visual.Window( size=[1920,1080], fullscr = True, winType  ='pyglet', screen =0, waitBlanking = True, checkTiming = True, monitor = mon)
 win.mouseVisible = False
 
 event.Mouse(win = win).setVisible(False)
